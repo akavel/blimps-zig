@@ -17,6 +17,8 @@ pub fn build(b: *std.build.Builder) void {
     exe.setTarget(target);
     exe.setBuildMode(mode);
     pkgs.addAllTo(exe);
+    exe.addIncludeDir(".gyro/github.com-tiehuis-zig-lua-archive-bb4e2759304b4b38df10919a499528fadfe33632.tar.gz/pkg/zig-lua-bb4e2759304b4b38df10919a499528fadfe33632/lua-5.3.4/src");
+    exe.linkSystemLibrary("c");
     exe.install();
 
     const run_cmd = exe.run();
