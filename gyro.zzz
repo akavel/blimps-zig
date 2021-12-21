@@ -2,3 +2,6 @@ deps:
   autolua:
     url: "https://github.com/daurnimator/zig-autolua/archive/0dba248465b6b8a7219f2b8f1141d71300715941.tar.gz"
     root: zig-autolua-0dba248465b6b8a7219f2b8f1141d71300715941/src/autolua.zig
+  lua:
+    url: "https://github.com/tiehuis/zig-lua/archive/bb4e2759304b4b38df10919a499528fadfe33632.tar.gz"
+    root: zig-lua-bb4e2759304b4b38df10919a499528fadfe33632/main.zig

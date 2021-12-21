@@ -10,7 +10,15 @@ pub const pkgs = struct {
         },
     };
 
+    pub const lua = Pkg{
+        .name = "lua",
+        .path = FileSource{
+            .path = ".gyro\\github.com-tiehuis-zig-lua-archive-bb4e2759304b4b38df10919a499528fadfe33632.tar.gz\\pkg\\zig-lua-bb4e2759304b4b38df10919a499528fadfe33632\\main.zig",
+        },
+    };
+
     pub fn addAllTo(artifact: *std.build.LibExeObjStep) void {
         artifact.addPackage(pkgs.autolua);
+        artifact.addPackage(pkgs.lua);
     }
 };
