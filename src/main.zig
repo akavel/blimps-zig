@@ -1,7 +1,13 @@
 const std = @import("std");
+const lua = @import("lua");
+const autolua = @import("autolua");
 
 pub fn main() anyerror!void {
     std.log.info("All your codebase are belong to us.", .{});
+
+    const L = try autolua.newState(std.testing.allocator);
+    defer lua.lua_close(L);
+    lua.luaL_openlibs(L);
 }
 
 test "basic test" {
