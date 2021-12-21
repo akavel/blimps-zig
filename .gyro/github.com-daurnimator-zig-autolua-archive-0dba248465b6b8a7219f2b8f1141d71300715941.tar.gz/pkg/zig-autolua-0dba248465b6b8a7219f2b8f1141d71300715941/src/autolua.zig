@@ -7,7 +7,7 @@ pub const lua = @cImport({
     @cInclude("lualib.h");
 });
 
-pub fn alloc(ud: ?*c_void, ptr: ?*c_void, osize: usize, nsize: usize) callconv(.C) ?*c_void {
+pub fn alloc(ud: ?*anyopaque, ptr: ?*anyopaque, osize: usize, nsize: usize) callconv(.C) ?*anyopaque {
     const c_alignment = 16;
     const allocator = @ptrCast(*std.mem.Allocator, @alignCast(@alignOf(std.mem.Allocator), ud));
     if (@ptrCast(?[*]align(c_alignment) u8, @alignCast(c_alignment, ptr))) |previous_pointer| {
@@ -143,7 +143,7 @@ pub fn check(L: ?*lua.lua_State, idx: c_int, comptime T: type) T {
             }
         },
         .Pointer => {
-            if (T == *c_void) {
+            if (T == *anyopaque) {
                 return lua.lua_topointer(L, idx);
             }
 
@@ -175,7 +175,7 @@ pub fn check(L: ?*lua.lua_State, idx: c_int, comptime T: type) T {
         .Optional => |N| {
             if (lua.lua_isnoneornil(L, idx)) {
                 return null;
-            } 
+            }
             return check(L, idx, N.child);
         },
         else => @compileError("unable to coerce to type: " ++ @typeName(T)),
