@@ -1,6 +1,6 @@
 const std = @import("std");
-const lua = @import("lua");
 const autolua = @import("autolua");
+const lua = autolua.lua;
 var allocator = std.heap.page_allocator;
 
 pub fn main() anyerror!void {
@@ -9,6 +9,13 @@ pub fn main() anyerror!void {
     const L = try autolua.newState(&allocator);
     defer lua.lua_close(L);
     lua.luaL_openlibs(L);
+
+    if (lua.luaL_loadstring(L, "print 'hello from Lua!'") != lua.LUA_OK) {
+        @panic("failed to load Lua string");
+    }
+    if (lua.lua_pcallk(L, 0, 0, 0, 0, null) != lua.LUA_OK) {
+        @panic("failed to exec Lua string");
+    }
 }
 
 test "basic test" {

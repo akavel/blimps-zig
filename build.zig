@@ -17,7 +17,8 @@ pub fn build(b: *std.build.Builder) void {
     exe.setTarget(target);
     exe.setBuildMode(mode);
     pkgs.addAllTo(exe);
-    exe.addIncludeDir(".gyro/github.com-tiehuis-zig-lua-archive-bb4e2759304b4b38df10919a499528fadfe33632.tar.gz/pkg/zig-lua-bb4e2759304b4b38df10919a499528fadfe33632/lua-5.3.4/src");
+    exe.addIncludeDir(lua_root);
+    exe.addCSourceFiles(lua_srcs, &.{});
     exe.linkSystemLibrary("c");
     exe.install();
 
@@ -37,3 +38,43 @@ pub fn build(b: *std.build.Builder) void {
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&exe_tests.step);
 }
+
+const lua_root = ".gyro/github.com-tiehuis-zig-lua-archive-bb4e2759304b4b38df10919a499528fadfe33632.tar.gz/pkg/zig-lua-bb4e2759304b4b38df10919a499528fadfe33632/lua-5.3.4/src/";
+
+const lua_srcs = &.{
+    lua_root ++ "lapi.c",
+    lua_root ++ "lauxlib.c",
+    lua_root ++ "lbaselib.c",
+    lua_root ++ "lbitlib.c",
+    lua_root ++ "lcode.c",
+    lua_root ++ "lcorolib.c",
+    lua_root ++ "lctype.c",
+    lua_root ++ "ldblib.c",
+    lua_root ++ "ldebug.c",
+    lua_root ++ "ldo.c",
+    lua_root ++ "ldump.c",
+    lua_root ++ "lfunc.c",
+    lua_root ++ "lgc.c",
+    lua_root ++ "linit.c",
+    lua_root ++ "liolib.c",
+    lua_root ++ "llex.c",
+    lua_root ++ "lmathlib.c",
+    lua_root ++ "lmem.c",
+    lua_root ++ "loadlib.c",
+    lua_root ++ "lobject.c",
+    lua_root ++ "lopcodes.c",
+    lua_root ++ "loslib.c",
+    lua_root ++ "lparser.c",
+    lua_root ++ "lstate.c",
+    lua_root ++ "lstring.c",
+    lua_root ++ "lstrlib.c",
+    lua_root ++ "ltable.c",
+    lua_root ++ "ltablib.c",
+    lua_root ++ "ltm.c",
+    // lua_root ++ "lua.c",
+    // lua_root ++ "luac.c",
+    lua_root ++ "lundump.c",
+    lua_root ++ "lutf8lib.c",
+    lua_root ++ "lvm.c",
+    lua_root ++ "lzio.c",
+};
