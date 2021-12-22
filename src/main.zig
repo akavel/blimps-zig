@@ -4,7 +4,21 @@ const lua = autolua.lua;
 var allocator = std.heap.page_allocator;
 
 pub fn main() anyerror!void {
-    std.log.info("All your codebase are belong to us.", .{});
+    // std.log.info("All your codebase are belong to us.", .{});
+
+    const basedir = ".";
+    var dir = try std.fs.cwd().openDir(basedir, .{
+        .iterate = true,
+    });
+    defer dir.close();
+
+    var walker = try dir.walk(allocator);
+    defer walker.deinit();
+    while (try walker.next()) |entry| {
+        if (entry.kind != .File)
+            continue;
+        std.debug.print("- {s}\n", .{entry.path});
+    }
 
     const L = try autolua.newState(&allocator);
     defer lua.lua_close(L);
