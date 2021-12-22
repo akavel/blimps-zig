@@ -6,18 +6,27 @@ var allocator = std.heap.page_allocator;
 pub fn main() anyerror!void {
     // std.log.info("All your codebase are belong to us.", .{});
 
-    const basedir = ".";
-    var dir = try std.fs.cwd().openDir(basedir, .{
-        .iterate = true,
-    });
-    defer dir.close();
+    var file_names = std.ArrayList([]u8).init(allocator);
+    // TODO: free all strings from file_names (is it needed?)
+    defer file_names.deinit();
+    {
+        const basedir = ".";
+        var dir = try std.fs.cwd().openDir(basedir, .{
+            .iterate = true,
+        });
+        defer dir.close();
 
-    var walker = try dir.walk(allocator);
-    defer walker.deinit();
-    while (try walker.next()) |entry| {
-        if (entry.kind != .File)
-            continue;
-        std.debug.print("- {s}\n", .{entry.path});
+        var walker = try dir.walk(allocator);
+        defer walker.deinit();
+        while (try walker.next()) |entry| {
+            if (entry.kind != .File)
+                continue;
+            try file_names.append(try std.mem.concat(allocator, u8, &[_][]const u8{entry.path}));
+        }
+    }
+
+    for (file_names.items) |entry| {
+        std.debug.print("- {s}\n", .{entry});
     }
 
     const L = try autolua.newState(&allocator);
