@@ -35,7 +35,26 @@ pub fn main() anyerror!void {
     }
     lua.lua_setglobal(L, "files");
 
-    if (lua.luaL_loadstring(L, "print 'hello from Lua!' print('* ' .. files[1])") != lua.LUA_OK) {
+    // Push helper func allowing to create a directory from Lua
+    lua.lua_pushcclosure(L, struct {
+        fn thunk(LL: ?*lua.lua_State) callconv(.C) c_int {
+            const path = autolua.check(LL, 1, []const u8);
+
+            // FIXME: return errors instead of throwing
+            var dir = std.fs.cwd().openDir(".", .{}) catch {
+                return lua.luaL_error(LL, "mkdir: failed to open current directory");
+            };
+            defer dir.close();
+            dir.makePath(path) catch {
+                // FIXME: more details about the error
+                return lua.luaL_error(LL, "mkdir: failed to create directory");
+            };
+            return 0;
+        }
+    }.thunk, 0);
+    lua.lua_setglobal(L, "mkdir");
+
+    if (lua.luaL_loadstring(L, "print 'hello from Lua!' print('* ' .. files[1]) mkdir('asdf/fff')") != lua.LUA_OK) {
         @panic("failed to load Lua string");
     }
     if (lua.lua_pcallk(L, 0, 0, 0, 0, null) != lua.LUA_OK) {
