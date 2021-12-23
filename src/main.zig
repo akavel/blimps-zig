@@ -54,11 +54,24 @@ pub fn main() anyerror!void {
     }.thunk, 0);
     lua.lua_setglobal(L, "mkdir");
 
-    if (lua.luaL_loadstring(L, "print 'hello from Lua!' print('* ' .. files[1]) mkdir('asdf/fff')") != lua.LUA_OK) {
-        @panic("failed to load Lua string");
+    // Push a helper error handler appending stack trace to Lua errors
+    // TODO[LATER]: put it into LUA_REGISTRYINDEX entry
+    if (lua.luaL_loadstring(L,
+        \\return debug.traceback(tostring(select(1, ...)), 2)
+    ) != lua.LUA_OK) {
+        @panic("failed to initialize debug traceback");
     }
-    if (lua.lua_pcallk(L, 0, 0, 0, 0, null) != lua.LUA_OK) {
-        @panic("failed to exec Lua string");
+
+    // Load and run 'blimps.lua' file, handling errors with handler pushed above
+    if (lua.luaL_loadfilex(L, "blimps.lua", null) != lua.LUA_OK) {
+        // TODO: use std.log instead
+        std.debug.print("error opening 'blimps.lua': {s}\n", .{lua.lua_tolstring(L, -1, null)});
+        std.os.exit(1);
+    }
+    if (lua.lua_pcallk(L, 0, 0, -2, 0, null) != lua.LUA_OK) {
+        // TODO: use std.log instead
+        std.debug.print("error executing 'blimps.lua': {s}\n", .{lua.lua_tolstring(L, -1, null)});
+        std.os.exit(1);
     }
 }
 
