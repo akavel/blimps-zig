@@ -6,37 +6,32 @@ var allocator = std.heap.page_allocator;
 pub fn main() anyerror!void {
     // std.log.info("All your codebase are belong to us.", .{});
 
-    var file_names = std.ArrayList([]u8).init(allocator);
-    // TODO: free all strings from file_names (is it needed?)
-    defer file_names.deinit();
+    // Create Lua state and initialize it with default libraries.
+    const L = try autolua.newState(&allocator);
+    defer lua.lua_close(L);
+    lua.luaL_openlibs(L);
+
+    // Recursively find all file names below current dir and put them into Lua global table 'files'
+    lua.lua_newtable(L);
     {
-        const basedir = ".";
-        var dir = try std.fs.cwd().openDir(basedir, .{
+        var dir = try std.fs.cwd().openDir(".", .{
             .iterate = true,
         });
         defer dir.close();
 
         var walker = try dir.walk(allocator);
         defer walker.deinit();
+
+        var i: u32 = 1;
         while (try walker.next()) |entry| {
             if (entry.kind != .File)
                 continue;
-            try file_names.append(try std.mem.concat(allocator, u8, &[_][]const u8{entry.path}));
+
+            autolua.push(L, i);
+            autolua.push(L, entry.path);
+            lua.lua_settable(L, -3);
+            i += 1;
         }
-    }
-
-    const L = try autolua.newState(&allocator);
-    defer lua.lua_close(L);
-    lua.luaL_openlibs(L);
-
-    lua.lua_newtable(L);
-    var i: u32 = 1;
-    for (file_names.items) |entry| {
-        // std.debug.print("- {s}\n", .{entry});
-        autolua.push(L, i);
-        autolua.push(L, entry);
-        lua.lua_settable(L, -3);
-        i += 1;
     }
     lua.lua_setglobal(L, "files");
 
