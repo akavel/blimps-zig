@@ -25,15 +25,22 @@ pub fn main() anyerror!void {
         }
     }
 
-    for (file_names.items) |entry| {
-        std.debug.print("- {s}\n", .{entry});
-    }
-
     const L = try autolua.newState(&allocator);
     defer lua.lua_close(L);
     lua.luaL_openlibs(L);
 
-    if (lua.luaL_loadstring(L, "print 'hello from Lua!'") != lua.LUA_OK) {
+    lua.lua_newtable(L);
+    var i: u32 = 1;
+    for (file_names.items) |entry| {
+        // std.debug.print("- {s}\n", .{entry});
+        autolua.push(L, i);
+        autolua.push(L, entry);
+        lua.lua_settable(L, -3);
+        i += 1;
+    }
+    lua.lua_setglobal(L, "files");
+
+    if (lua.luaL_loadstring(L, "print 'hello from Lua!' print('* ' .. files[1])") != lua.LUA_OK) {
         @panic("failed to load Lua string");
     }
     if (lua.lua_pcallk(L, 0, 0, 0, 0, null) != lua.LUA_OK) {
